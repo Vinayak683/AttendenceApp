@@ -72,7 +72,7 @@ public class SheetActivity extends AppCompatActivity {
         TableRow[] rows = new TableRow[rowSize];
         TextView[] roll_tvs = new TextView[rowSize];
         TextView[] name_tvs = new TextView[rowSize];
-        TextView[][] status_tvs = new TextView[rowSize][DAY_IN_MONTH + 1];
+        TextView[][] status_tvs = new TextView[rowSize][DAY_IN_MONTH + 2]; // Added 1 extra column for total
 
         // Initialize roll_tvs and name_tvs arrays
         for (int i = 0; i < rowSize; i++) {
@@ -96,7 +96,7 @@ public class SheetActivity extends AppCompatActivity {
 
         // Initialize status_tvs array
         for (int i = 0; i < rowSize; i++) {
-            for (int j = 0; j <= DAY_IN_MONTH; j++) {
+            for (int j = 0; j <= DAY_IN_MONTH + 1; j++) { // Modified loop to accommodate the extra column
                 status_tvs[i][j] = new TextView(this); // Initialize TextViews
             }
         }
@@ -106,16 +106,26 @@ public class SheetActivity extends AppCompatActivity {
             status_tvs[0][i].setTypeface(status_tvs[0][i].getTypeface(), Typeface.BOLD);
         }
 
+        status_tvs[0][DAY_IN_MONTH + 1].setText("Total"); // Set header for total column
+        status_tvs[0][DAY_IN_MONTH + 1].setTypeface(status_tvs[0][DAY_IN_MONTH + 1].getTypeface(), Typeface.BOLD);
+
         for (int i = 1; i < rowSize; i++) {
+            int presentCount = 0; // Counter for present days
             for (int j = 1; j <= DAY_IN_MONTH; j++) {
                 String day = String.valueOf(j);
                 if (day.length() == 1) day = "0" + day;
                 String date = day + "." + month;
                 String status = dbHelper.getStatus(idArray[i - 1], date);
                 status_tvs[i][j].setText(status);
+                if (status != null && status.equalsIgnoreCase("P")) {
+                    presentCount++;
+                }
             }
+            // Display total present days
+            status_tvs[i][DAY_IN_MONTH + 1].setText(String.valueOf(presentCount) + "/" + DAY_IN_MONTH);
         }
 
+        // Displaying all the TextViews in TableRows
         for (int i = 0; i < rowSize; i++) {
             rows[i] = new TableRow(this);
 
@@ -130,7 +140,7 @@ public class SheetActivity extends AppCompatActivity {
 
             rows[i].addView(roll_tvs[i]);
 
-            for (int j = 0; j <= DAY_IN_MONTH; j++) {
+            for (int j = 0; j <= DAY_IN_MONTH + 1; j++) { // Modified loop to accommodate the extra column
                 if (j > 0) {
                     // Add vertical line between columns
                     View verticalLine = new View(this);
@@ -153,6 +163,7 @@ public class SheetActivity extends AppCompatActivity {
             tableLayout.addView(rows[i]);
         }
     }
+
 
     // Method to convert dp to pixels
     private int dpToPx(int dp) {
